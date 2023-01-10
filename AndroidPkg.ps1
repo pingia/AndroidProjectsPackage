@@ -1,4 +1,4 @@
-﻿$DebugPreference = "Continue"   #配置debug输出显示
+$DebugPreference = "Continue"   #配置debug输出显示
 
 #====弹出一个输入框，返回输入框输入的文本====#
 Function showInputDialog([String]$dialogTitle, [String]$dialogText){
@@ -355,14 +355,14 @@ $user_info_str = $uri_project_git.UserInfo;
 
 if([String]::IsNullOrEmpty($user_info_str)){
    #如果用户名为空，说明git仓库没有用户信息，此时需要弹出git用户名和密码输入
-   $user_name_pwd = showTwoLineInputDialog "git用户鉴权" "请输入git仓库的用户名和密码" "Username:" "Password:";     
+   $user_name_pwd = showTwoLineInputDialog -dialogTitle:"git用户鉴权" -dialogText:"请输入git仓库的用户名和密码" -line1_label_text:"Username:" -line2_label_text:"Password:";     
    if($user_name_pwd){
         Write-debug "对话框确定后的用户信息是: $user_name_pwd"
         #如果用户名和密码输入不为空，那么获取用户名和密码
-       $name = $user_name_pwd[0];
-       $pwd = $user_name_pwd[1];
-       $name_info_str = $name.replace("@","%40");
-       $pwd_info_str = $pwd.replace("@","%40");
+       $git_name = $user_name_pwd[0];
+       $git_pwd = $user_name_pwd[1];
+       $name_info_str = $git_name.replace("@","%40");
+       $pwd_info_str = $git_pwd.replace("@","%40");
 
        $user_info_str = $name_info_str + ":" + $pwd_info_str;
 
@@ -379,7 +379,7 @@ Write-Output "输出:  你输入的用户信息是: $user_info_str "
 
 #选择打包类型，默认打aar,
 $package_types = "aab","apk"
-$selected_package_types = showMultiSelectDialog "选择打包类型" "请选择打包aab或apk，默认打aab" $package_types
+$selected_package_types = showMultiSelectDialog -dialogTitle:"选择打包类型" -dialogText:"请选择打包aab或apk，默认打aab" -items:$package_types
 if($selected_package_types) {
     Write-Debug "你选择的打包类型是: $selected_package_types"
 }else{
@@ -472,7 +472,7 @@ $PATH_GIT_EXECUTABLE = [io.path]::combine($expand_mingit_zip_home ,"cmd"); # git
 
 #将git和android sdk的可执行路径 增加到path环境变量
 if($Env:Path.contains($PATH_GIT_EXECUTABLE)){
-    echo "your env path contains git executable, remove first, then add git executable to env_path at beginning"
+    Write-Output "your env path contains git executable, remove first, then add git executable to env_path at beginning"
     $Env:Path = $Env:Path.Replace($PATH_GIT_EXECUTABLE+";", '');
 }
 
@@ -487,11 +487,11 @@ Write-Debug "当前环境变量path是: $Env:Path"
 $env:GIT_REDIRECT_STDERR = '2>&1'   #解决git执行成功，但是控制台报错的问题
 
 #列出git repository的全部远端分支
-cd $PATH_GIT_EXECUTABLE
+Set-Location $PATH_GIT_EXECUTABLE
 $project_android_git_withuserinfo = $uri_project_git.Scheme + "://" + $user_info_str + "@" +  $uri_project_git.Host + ":" +   $uri_project_git.Port + $uri_project_git.PathAndQuery + $uri_project_git.Fragment;
 Write-Output "输出:  带用户信息的git仓库地址为: $project_android_git_withuserinfo" 
 $ls_remote_git_return = (git ls-remote -h $project_android_git_withuserinfo);
-$remote_branch_array =  ($ls_remote_git_return )  2>&1 | % ToString
+$remote_branch_array =  ($ls_remote_git_return )  2>&1 | ForEach-Object ToString
 Write-Debug "测试,git ls-remote命令返回: $remote_branch_array"
 $remote_branch_names = @()   #远端分支名，有前缀"refs/heads/"
 foreach ($line in $remote_branch_array){
@@ -507,7 +507,7 @@ if($remote_branch_names  -ccontains ($remote_branch_prefix + $project_android_gi
     Write-Output "输出:  精确匹配到你输入的分支: $project_android_git_branch，准备克隆分支"
     $selected_branch_name = $project_android_git_branch;
 }else{
-    $selected_branch = showSelectDialog "选择分支" "请选择一个远程分支进行下载" $remote_branch_names
+    $selected_branch = showSelectDialog -dialogTitle:"选择分支" -dialogText:"请选择一个远程分支进行下载" -items:$remote_branch_names
     if([String]::IsNullOrEmpty($selected_branch)){
         Write-Error "您没有选择任何分支，脚本退出"
         return    
@@ -553,7 +553,7 @@ if($TRUE_FALSE_PROJECT_BUILD_FILE -eq $False){
 
 #
 #获取所有工程子目录的文件名
-$sub_folders_names = (Get-ChildItem -Directory -Path $android_project_dir)  2>&1 | % ToString
+$sub_folders_names = (Get-ChildItem -Directory -Path $android_project_dir)  2>&1 | ForEach-Object ToString
 
 $wait_install_components = @()
 $wait_install_components += "platform-tools";
@@ -574,7 +574,7 @@ foreach ($sub_folder_name in $sub_folders_names){
     #获取子模块下所有build.gradle中的buildToolsVersion和compileSdkVersion版本号
     #1、获取compile sdk version
     $complileSdkVersionEntry = 'compileSdkVersion\s*\d+';  #匹配如: compileSdkVersion 29
-    $module_compilesdk_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $complileSdkVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
+    $module_compilesdk_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $complileSdkVersionEntry -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }
     if([String]::IsNullOrEmpty($module_compilesdk_version_line)){        
         Write-Error "没有获取到模块: $sub_folder_name 的 compile sdk version，脚本退出"
         return; 
@@ -589,7 +589,7 @@ foreach ($sub_folder_name in $sub_folders_names){
 
     #2、获取buildtools version
     $buildToolsVersionEntry = "buildToolsVersion\s*""\d+.\d+.\d+""";   #匹配如: buildToolsVersion 29.0.2
-    $module_buildtools_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $buildToolsVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
+    $module_buildtools_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $buildToolsVersionEntry -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }
     if([String]::IsNullOrEmpty($module_buildtools_version_line)){        
         Write-Debug "没有获取到模块: $sub_folder_name 的buildToolsVersion，不需要下载build tools"
     }else{
@@ -607,7 +607,7 @@ $wait_install_components +="--licenses";
 #获取项目根目录build.gradle文件内容，判断是要下载jdk8还是11
 Write-Debug "工程根目录下build.gradle路径是：$project_build_file "
 $AGPToolsVersionEntry = 'com.android.tools.build:gradle:\s*\d+.\d+.\d+'; #匹配如:  com.android.tools.build:gradle:3.2.0
-$AGPToolsVersionLine = Select-String -path $project_build_file  -Pattern $AGPToolsVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
+$AGPToolsVersionLine = Select-String -path $project_build_file  -Pattern $AGPToolsVersionEntry -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }
 
 if([String]::IsNullOrEmpty($AGPToolsVersionLine)){
     Write-Error "在项目根目录下的build.gradle文件中，没有找到AGPToolsVersion行，无法进行编译打包，脚本退出"
@@ -694,7 +694,7 @@ if(Test-Path $JDK_HOME){
 $Env:JAVA_HOME=$JDK_HOME
 $JAVA_HOME_BIN_PATH=Join-Path $JDK_HOME "bin"
 if($Env:Path.contains($JAVA_HOME_BIN_PATH)){
-    echo "your env path contains java home bin, remove first ,then add java home bin to env_path at beginning"
+    Write-Output "your env path contains java home bin, remove first ,then add java home bin to env_path at beginning"
     $Env:Path = $Env:Path.Replace($JAVA_HOME_BIN_PATH+";",'')
 }
 
@@ -740,7 +740,7 @@ Write-Debug "配置Android SDK环境变量后，当前Path环境变量:$Env:Path
 
 Write-Output "输出:  Android SDK环境变量配置成功，准备通过命令行安装Android SDK组件..."
 
-cd $ANDROID_SDK_EXECUTABLE
+Set-Location $ANDROID_SDK_EXECUTABLE
 foreach ($component in $wait_install_components){
     Write-Debug "正在安装Android SDK组件: $component"
     Write-Output y | sdkmanager.bat --no_https --sdk_root=$expand_android_sdk_zip_home $component
@@ -763,7 +763,7 @@ if($?){
 #2\创建local.properties文件，文件中指定sdk路径
 #3\执行gradlew assembleRelease或bundleRelease任务，前面已指定临时变量java_home
 
-cd $android_project_dir
+Set-Location $android_project_dir
 $write_local_properties_content = "sdk.dir=$expand_android_sdk_zip_home" -replace "\\", "\\"    #如果是windows, 则必须将反斜杠\替换成\\
 Set-Content -Path .\local.properties -Value $write_local_properties_content    #将sdk路径写进local.properties，格式  sdk.dir=c:\\dirname1\\dirname2
 
@@ -789,7 +789,7 @@ foreach ($pkg_type in $selected_package_types){
 
 
 #过滤项目目录下，最后写入时间在打包开始后，且文件大小大于1mb字节的apk或aab文件
-$filter_android_pkg_files = (Get-ChildItem -Path $android_project_dir  -Recurse -Include *.apk ,*.aab | Where-Object -FilterScript {($_.LastWriteTime -gt $package_start_time) -and ($_.Length -ge 1mb)}) 2>&1 | % ToString
+$filter_android_pkg_files = (Get-ChildItem -Path $android_project_dir  -Recurse -Include *.apk ,*.aab | Where-Object -FilterScript {($_.LastWriteTime -gt $package_start_time) -and ($_.Length -ge 1mb)}) 2>&1 | ForEach-Object ToString
 if($filter_android_pkg_files){
     Write-Output "项目: $android_project_dir 生成apk或aab成功，准备拷贝到目标目录..."
 }else{
