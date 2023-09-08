@@ -1,13 +1,60 @@
 $DebugPreference = "Continue"   #配置debug输出显示
+$os_name = [System.Environment]::OSVersion.Platform
+
+$isWin = $os_name -match "win"
+Write-Debug $os_name 
+#for windows only!!!
+
+#=====弹出一个提示框，
+#for windows only!!
+function showPopDialog {
+    param (
+        [String]$tipTitle, [String]$tipText
+    )
+
+    $ws = New-Object -ComObject WScript.Shell  
+    $wsr = $ws.popup($tipText,0,$tipTitle,0)
+    
+}
+
+function showAlertCmd {
+    param (
+        [String]$tipTitle, [String]$tipText
+    )
+
+    
+    
+    Write-Host ================ $tipTitle ================ 
+
+    Write-Warning $tipText
+    
+}
+
+function showPopAlertDialogOrCmd {
+    param (
+        [String]$tipTitle, [String]$tipText
+    )
+    if($isWin -eq $True)
+    {
+        showPopDialog @PSBoundParameters
+    }else{
+        showAlertCmd @PSBoundParameters
+    }
+}
+
 
 #====弹出一个输入框，返回输入框输入的文本====#
-Function showInputDialog([String]$dialogTitle, [String]$dialogText){
-
+#for windows only
+function showInputDialog {
+    param (
+        [String]$tipTitle, [String]$tipText
+    )
+    
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = $dialogTitle
+    $form.Text = $tipTitle
     $form.Size = New-Object System.Drawing.Size(300,200)
     $form.StartPosition = 'CenterScreen'
 
@@ -30,7 +77,7 @@ Function showInputDialog([String]$dialogTitle, [String]$dialogText){
     $label = New-Object System.Windows.Forms.Label
     $label.Location = New-Object System.Drawing.Point(10,20)
     $label.Size = New-Object System.Drawing.Size(280,40)
-    $label.Text = $dialogText
+    $label.Text = $tipText
     $form.Controls.Add($label)
 
     $textBox = New-Object System.Windows.Forms.TextBox
@@ -51,15 +98,48 @@ Function showInputDialog([String]$dialogTitle, [String]$dialogText){
     return $x
 }
 
+function showInputCmd{
+    param (
+        [String]$tipTitle, [String]$tipText
+    )
+
+    
+    Write-Host ================ $tipTitle ================ 
+
+    $x = Read-Host -Prompt $tipText
+
+    return $x
+   
+}
+
+function showInputDialogOrCmd {
+    param (
+        [String]$tipTitle, [String]$tipText
+    )
+
+    if($isWin -eq $True)
+        {
+            return showInputDialog @PSBoundParameters
+        }else{
+            return showInputCmd @PSBoundParameters
+        }
+    
+}
+
 
 #====两行输入文本对话框====#
-Function showTwoLineInputDialog([String]$dialogTitle, [String]$dialogText, [String]$line1_label_text, [String]$line2_label_text){
-
+#for windows only
+function showTwoLineInputDialog {
+    param (
+        [String]$title, [String]$text, [String]$line1_label_text, [String]$line2_label_text
+    )
+ 
+    
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = $dialogTitle
+    $form.Text = $title
     $form.Size = New-Object System.Drawing.Size(400,200)
     $form.StartPosition = 'CenterScreen'
 
@@ -82,7 +162,7 @@ Function showTwoLineInputDialog([String]$dialogTitle, [String]$dialogText, [Stri
     $label = New-Object System.Windows.Forms.Label
     $label.Location = New-Object System.Drawing.Point(10,20)
     $label.Size = New-Object System.Drawing.Size(280,40)
-    $label.Text = $dialogText
+    $label.Text = $text
     $form.Controls.Add($label)
 
     $line1_label = New-Object System.Windows.Forms.Label
@@ -122,13 +202,48 @@ Function showTwoLineInputDialog([String]$dialogTitle, [String]$dialogText, [Stri
     return $textbox1_s, $textbox2_s
 }
 
+function showTwoLineInputCmdInput {
+    param (
+        [String]$title, [String]$text, [String]$line1_label_text, [String]$line2_label_text
+    )
+
+    
+    Write-Host ================ $title================ 
+    Write-Host $text
+
+    $x1 = Read-Host -Prompt $line1_label_text
+    $x2 = Read-Host -Prompt $line2_label_text
+
+    return $x1, $x2
+    
+}
+
+function showTwoLineInputDialogOrCmd {
+    param (
+        [String]$title, [String]$text, [String]$line1_label_text, [String]$line2_label_text
+    )
+
+    if($isWin -eq $True)
+    {
+        return showTwoLineInputDialog  @PSBoundParameters 
+    }else{
+        return showTwoLineInputCmdInput  @PSBoundParameters
+    }
+    
+}
+
 #====弹出一个简单的列表项选择框，返回选中并确定的列表项====#
-Function showSelectDialog([String]$dialogTitle,[String]$dialogText, [string[]]$items){
+#for windows only
+function showSelectDialog {
+    param (
+        [String]$title,[String]$text, [string[]]$items
+    )
+
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
     $form = New-Object System.Windows.Forms.Form
-    $form.Text = $dialogTitle
+    $form.Text = $title
     $form.Size = New-Object System.Drawing.Size(300,200)
     $form.StartPosition = 'CenterScreen'
 
@@ -151,7 +266,7 @@ Function showSelectDialog([String]$dialogTitle,[String]$dialogText, [string[]]$i
     $label = New-Object System.Windows.Forms.Label
     $label.Location = New-Object System.Drawing.Point(10,20)
     $label.Size = New-Object System.Drawing.Size(280,20)
-    $label.Text = $dialogText
+    $label.Text = $text
     $form.Controls.Add($label)
 
     $listBox = New-Object System.Windows.Forms.ListBox
@@ -175,10 +290,64 @@ Function showSelectDialog([String]$dialogTitle,[String]$dialogText, [string[]]$i
     }
 
     return $x
+    
 }
 
+
+function showSelectCmdInput {
+    param (
+        [String]$title,[String]$text, [string[]]$items
+    )
+    
+    do
+    {
+        
+        Write-Host ================ $title================ 
+
+        $i = 0
+        foreach($str in $items){
+            $iadd = $i + 1;
+            write-host "$iadd - Select $str"
+            $i += 1
+        }
+
+        $len = $items.Length
+        $selection = Read-Host -Prompt $text
+
+        for($x=1; $x -le $len; $x=$x+1)   
+        {   
+            if ($selection -eq $x)
+            {
+                return $items[$x-1]
+            }
+        }
+    }
+    until ($selection -eq 'q')
+
+    return ""
+}
+
+function showSelectDialogOrCmd {
+    param (
+        [String]$title,[String]$text, [string[]]$items
+    )
+    if($isWin -eq $True)
+    {
+        return showSelectDialog  @PSBoundParameters
+    }else{
+        return showSelectCmdInput @PSBoundParameters
+    }
+    
+}
+ 
+
 #多选列表
-Function showMultiSelectDialog([String]$dialogTitle,[String]$dialogText, [string[]]$items){
+#for windows only
+function showMultiSelectDialog {
+    param (
+        [String]$dialogTitle,[String]$dialogText, [string[]]$items
+    )
+
     Add-Type -AssemblyName System.Windows.Forms
     Add-Type -AssemblyName System.Drawing
 
@@ -186,7 +355,7 @@ Function showMultiSelectDialog([String]$dialogTitle,[String]$dialogText, [string
     $form.Text = $dialogTitle
     $form.Size = New-Object System.Drawing.Size(300,200)
     $form.StartPosition = 'CenterScreen'
-
+   
     $OKButton = New-Object System.Windows.Forms.Button
     $OKButton.Location = New-Object System.Drawing.Point(75,120)
     $OKButton.Size = New-Object System.Drawing.Size(75,23)
@@ -231,108 +400,201 @@ Function showMultiSelectDialog([String]$dialogTitle,[String]$dialogText, [string
         $x = $listBox.SelectedItems
         $x
     }
+    
+}
+
+function showCmdSelectApkOrAab {
+    param (
+        
+    )
+    
+    $arr = @()
+
+    do {
+        write-host  ================ "选择打包类型"=============== 
+        write-host "1 - Selection aab"
+        write-host "2 - Selection apk"
+        write-host "12 - Selection aab and apk" 
+        write-host "X - Exit"
+
+
+        
+        $choice = read-host -Prompt "请选择打包aab或apk，默认打aab"
+        
+        write-host ""
+        
+        $ok = $choice -eq '1' -or $choice -eq '2' -or $choice -eq '12' -or $choice -eq 'X'
+        
+        if ( -not $ok) { write-host "Invalid selection" }
+    } until ( $ok )
+
+    
+    
+    switch  ( $choice ) {
+        "1"
+        {
+            $arr+="aab"
+        }
+        
+        "2"
+        {
+            $arr+="apk"
+        }
+
+        "12"{
+            $arr+="aab"
+            $arr+="apk"
+        }
+    }
+
+    $arr_count = $arr.count
+
+    Write-Debug "arr count is : $arr_count"
+
+    if( $arr_count -eq 0){
+        $arr+="aab"
+    }else{
+        Write-Debug "arr is $arr"
+    }
+    
+
+    return $arr
 }
 
 
 [bool]$isDownloaded=$False
+
+
  
 #==============================下载函数===========================#
-Function Download([String]$url, [String]$fullFileName)
-{
+function Download {
+    param (
+        [String]$url, [String]$fullFileName
+    )
+
     if([String]::IsNullOrEmpty($url) -or [String]::IsNullOrEmpty($fullFileName))
     {
         return $False;
     }
-    try
+
+    Write-Debug "****************下载器正在从地址: $url 下载....***********"
+
+    if($isWin -eq $True)
     {
-        $client = New-Object System.Net.WebClient 
-        $client.UseDefaultCredentials = $True
- 
-        #监视WebClient 的下载完成事件 
-         Register-ObjectEvent -InputObject $client -EventName DownloadFileCompleted `
-        -SourceIdentifier Web.DownloadFileCompleted -Action {   
-            #下载完成，结束下载
-            $Global:isDownloaded = $True
-        }
-        #监视WebClient 的进度事件
-        Register-ObjectEvent -InputObject $client -EventName DownloadProgressChanged `
-        -SourceIdentifier Web.DownloadProgressChanged -Action {
-            #将下载的进度信息记录到全局的Data对象中
-            $Global:Data = $event
-        }
- 
-        $Global:isDownloaded =$False
- 
-        #监视PowerShell退出事件
-        Register-EngineEvent -SourceIdentifier ([System.Management.Automation.PSEngineEvent]::Exiting) -Action {
-            #PowerShell 结束事件
+
+
+        try
+        {
+            $client = New-Object System.Net.WebClient 
+            $client.UseDefaultCredentials = $True
+    
+            #监视WebClient 的下载完成事件 
+            Register-ObjectEvent -InputObject $client -EventName DownloadFileCompleted `
+            -SourceIdentifier Web.DownloadFileCompleted -Action {   
+                #下载完成，结束下载
+                $Global:isDownloaded = $True
+            }
+            #监视WebClient 的进度事件
+            Register-ObjectEvent -InputObject $client -EventName DownloadProgressChanged `
+            -SourceIdentifier Web.DownloadProgressChanged -Action {
+                #将下载的进度信息记录到全局的Data对象中
+                $Global:Data = $event
+            }
+    
+            $Global:isDownloaded =$False
+    
+            #监视PowerShell退出事件
+            Register-EngineEvent -SourceIdentifier ([System.Management.Automation.PSEngineEvent]::Exiting) -Action {
+                #PowerShell 结束事件
+                Get-EventSubscriber | Unregister-Event
+                Get-Job | Remove-Job -Force
+            }
+            
+            #启用定时器，设置1秒一次输出下载进度
+            $timer = New-Object timers.timer
+            # 1 second interval
+            $timer.Interval = 1000
+            #Create the event subscription
+            Register-ObjectEvent -InputObject $timer -EventName Elapsed -SourceIdentifier Timer.Output -Action {
+                $percent = $Global:Data.SourceArgs.ProgressPercentage
+                $totalBytes = $Global:Data.SourceArgs.TotalBytesToReceive
+                $receivedBytes = $Global:Data.SourceArgs.BytesReceived
+            
+                If ($percent -ne 100) {
+                    #这里你可以选择将进度显示到命令行 也可以选择将进度写到文件，具体看自己需求
+                    #我这里选择将进度输出到命令行
+                        Write-Host "当前下载进度:$percent  已下载:$receivedBytes 总大小:$totalBytes"
+                        
+                }
+            
+            }
+            $timer.Enabled = $True
+    
+            #使用异步方式下载文件
+            $client.DownloadFileAsync($url, $fullFileName)
+            While (-Not $isDownloaded)
+            {
+                    #等待下载线程结束
+                    Start-Sleep -m 100
+            }
+    
+            $timer.Enabled = $False
+            
+            #清除监视
             Get-EventSubscriber | Unregister-Event
             Get-Job | Remove-Job -Force
-           }
-           
-         #启用定时器，设置1秒一次输出下载进度
-        $timer = New-Object timers.timer
-        # 1 second interval
-        $timer.Interval = 1000
-        #Create the event subscription
-        Register-ObjectEvent -InputObject $timer -EventName Elapsed -SourceIdentifier Timer.Output -Action {
-            $percent = $Global:Data.SourceArgs.ProgressPercentage
-            $totalBytes = $Global:Data.SourceArgs.TotalBytesToReceive
-            $receivedBytes = $Global:Data.SourceArgs.BytesReceived
-           
-            If ($percent -ne 100) {
-                 #这里你可以选择将进度显示到命令行 也可以选择将进度写到文件，具体看自己需求
-                 #我这里选择将进度输出到命令行
-                    Write-Host "当前下载进度:$percent  已下载:$receivedBytes 总大小:$totalBytes"
-                    
-            }
-           
+            #关闭下载线程
+            $client.Dispose()
+            Remove-Variable client
+        
+            Write-Host "Finish "
         }
-        $timer.Enabled = $True
- 
-        #使用异步方式下载文件
-         $client.DownloadFileAsync($url, $fullFileName)
-          While (-Not $isDownloaded)
-           {
-                #等待下载线程结束
-                Start-Sleep -m 100
-           }
- 
-         $timer.Enabled = $False
-         
-        #清除监视
-        Get-EventSubscriber | Unregister-Event
-        Get-Job | Remove-Job -Force
-        #关闭下载线程
-        $client.Dispose()
-        Remove-Variable client
-      
-         Write-Host "Finish "
+        catch
+        {
+        
+            return $False;  
+        }
+        return $true;
+    }else{
+Invoke-WebRequest -URI $url -OutFile $fullFileName
     }
-    catch
-    {
-       
-        return $False;  
-    }
-    return $true;
+    
 }
  
 #==============================业务代码执行区=========================#
 
-$project_android_git = showInputDialog "输入项目git仓库地址" "Please Input your android project's remote git repository url: "
+$isGitInstalled = $False
+
+try
+{
+    git | Out-Null
+    $isGitInstalled = $True
+   "Global Git is installed"
+}
+catch [System.Management.Automation.CommandNotFoundException]
+{
+    "Global No git"
+    $isGitInstalled = $False
+}
+
+
+if($isWin -eq $False -and $isGitInstalled -eq $False){
+    Write-Debug "检测到您未安装git， 在非windows系统下，需要先安装git，脚本退出..."
+    return;
+}
+
+$project_android_git = showInputDialogOrCmd "输入项目git仓库地址" "Please Input your android project's remote git repository url: "
 Write-Output "输出:  你输入的打包git仓库地址是: $project_android_git"
 
  if([Uri]::IsWellFormedUriString($project_android_git, 'Absolute')){
    
 }else{
     Write-Error "你输入的git仓库地址语法错误，请重新输入"
-
-    $ws = New-Object -ComObject WScript.Shell  
-    $wsr = $ws.popup("你没有输入正确的git地址,请重新输入",0,"提示",0)
+    showPopAlertDialogOrCmd "提示" "你没有输入正确的http协议的git地址,请重新输入"
     return;
 }
 
-$project_android_git_branch = showInputDialog "输入打包分支名" "请输入您要进行打包的分支名，注意大小写 "
+$project_android_git_branch = showInputDialogOrCmd "输入打包分支名" "请输入您要进行打包的分支名，注意大小写 "
 Write-Output "输出:  你输入的打包分支是: $project_android_git_branch"
 
 
@@ -340,13 +602,12 @@ Write-Output "输出:  你输入的打包分支是: $project_android_git_branch"
 if([String]::IsNullOrEmpty( $project_android_git_branch )){
     #如果分支输入为空或直接取消对话框
     Write-Debug "你没有输入分支.在后续会弹出对话框让你选择分支打包..."
-    $ws = New-Object -ComObject WScript.Shell  
-    $wsr = $ws.popup("你没有输入要打包的git分支,后续会弹出对话框让你选择分支打包",0,"提示",0)
+    showPopAlertDialogOrCmd "提示" "你没有输入要打包的git分支,后续会弹出对话框让你选择分支打包"
 }else{
     #输入了分支，后续需要判断
     Write-Debug "你选择打包分支$project_android_git_branch，后续会判断你输入的分支是否存在，若不存在，会弹出对话框，让你选择；若存在，将会直接开始打包..."
-    $ws = New-Object -ComObject WScript.Shell  
-    $wsr = $ws.popup("你输入了打包分支，若分支存在，后续将直接打包该分支",0,"提示",0)
+
+    showPopAlertDialogOrCmd "提示" "你输入了打包分支，若分支存在，后续将直接打包该分支"
 }
 
 #获取仓库地址对应的user_info，如果有,
@@ -355,14 +616,14 @@ $user_info_str = $uri_project_git.UserInfo;
 
 if([String]::IsNullOrEmpty($user_info_str)){
    #如果用户名为空，说明git仓库没有用户信息，此时需要弹出git用户名和密码输入
-   $user_name_pwd = showTwoLineInputDialog -dialogTitle:"git用户鉴权" -dialogText:"请输入git仓库的用户名和密码" -line1_label_text:"Username:" -line2_label_text:"Password:";     
+   $user_name_pwd = showTwoLineInputDialogOrCmd "git用户鉴权" "请输入git仓库的用户名和密码" "Username:" "Password:";     
    if($user_name_pwd){
         Write-debug "对话框确定后的用户信息是: $user_name_pwd"
         #如果用户名和密码输入不为空，那么获取用户名和密码
-       $git_name = $user_name_pwd[0];
-       $git_pwd = $user_name_pwd[1];
-       $name_info_str = $git_name.replace("@","%40");
-       $pwd_info_str = $git_pwd.replace("@","%40");
+       $name = $user_name_pwd[0];
+       $pwd = $user_name_pwd[1];
+       $name_info_str = $name.replace("@","%40");
+       $pwd_info_str = $pwd.replace("@","%40");
 
        $user_info_str = $name_info_str + ":" + $pwd_info_str;
 
@@ -379,7 +640,14 @@ Write-Output "输出:  你输入的用户信息是: $user_info_str "
 
 #选择打包类型，默认打aar,
 $package_types = "aab","apk"
-$selected_package_types = showMultiSelectDialog -dialogTitle:"选择打包类型" -dialogText:"请选择打包aab或apk，默认打aab" -items:$package_types
+
+if($isWin -eq $True){
+    $selected_package_types =  showMultiSelectDialog "选择打包类型" "请选择打包aab或apk，默认打aab" $package_types
+}
+else {
+    $selected_package_types = showCmdSelectApkOrAab "选择打包类型" "请选择打包aab或apk，默认打aab" $package_types
+}
+
 if($selected_package_types) {
     Write-Debug "你选择的打包类型是: $selected_package_types"
 }else{
@@ -400,23 +668,65 @@ If($Is64BitOS -eq $true) {
 }
 
 
-#下载 openjdk8 地址
-If($Is64BitOS -eq $true) { 
-    $open_win_jdk8_url="https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-win_x64.zip";
+#下载 openjdk8 地址 windows
+If($Is64BitOS -eq $true) {
+    #linux common jdk8 64bit: https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-linux_x64.zip 
+    #mac common jdk8 64bit:   https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-macosx_x64.zip
+    if($isWin -eq $True){
+        $open_win_jdk8_url="https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-win_x64.zip";
+    }else{
+        if($IsLinux){
+            $open_win_jdk8_url="https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-linux_x64.zip";
+        }else{
+            $open_win_jdk8_url="https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-macosx_x64.zip";
+        }
+    }
+    
 }else{
-    $open_win_jdk8_url="https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-win_i686.zip";
+    #linux common jdk8 32bit:  https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-linux_i686.zip
+    if($isWin -eq $True){
+        $open_win_jdk8_url="https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-win_i686.zip";
+    }else{
+        $open_win_jdk8_url="https://cdn.azul.com/zulu/bin/zulu8.66.0.15-ca-jdk8.0.352-linux_i686.zip";
+    }
 }
 
 #下载 open_jdk11 地址
 If($Is64BitOS -eq $true) { 
-    $open_win_jdk11_url="https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-win_x64.zip";
+    #linux_common jdk 11 64bit:  https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-linux_x64.zip
+    #mac common jdk 11 64bit:    https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-macosx_x64.zip
+    if($isWin -eq $True){
+        $open_win_jdk11_url="https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-win_x64.zip";
+    }else{
+        if($IsLinux){
+            $open_win_jdk11_url="https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-linux_x64.zip";
+        }else{
+            $open_win_jdk11_url="https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-macosx_x64.zip";
+        }
+        
+    }
 }else{
-    $open_win_jdk11_url="https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-win_i686.zip";
+    #linux common jdk11 32bit:   https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-linux_i686.zip
+    if($isWin -eq $True){
+        $open_win_jdk11_url="https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-win_i686.zip";
+    }else{
+        $open_win_jdk11_url="https://cdn.azul.com/zulu/bin/zulu11.60.19-ca-jdk11.0.17-linux_i686.zip";
+    }
 }
 
               
 #下载android sdk地址，common-cmdline-tools
-$android_sdk_url="https://dl.google.com/android/repository/commandlinetools-win-8512546_latest.zip"
+#linux下载地址:  https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip
+#mac 下载地址: https://dl.google.com/android/repository/commandlinetools-mac-9123335_latest.zip
+if($isWin -eq $True){
+    $android_sdk_url="https://dl.google.com/android/repository/commandlinetools-win-8512546_latest.zip"
+}else{
+    if($IsLinux){
+        $android_sdk_url="https://dl.google.com/android/repository/commandlinetools-linux-9123335_latest.zip"
+    }else{
+        $android_sdk_url="https://dl.google.com/android/repository/commandlinetools-mac-9123335_latest.zip"
+    }
+}
 
 
 $script_dir = Split-Path -Parent $MyInvocation.MyCommand.Definition # 获取脚本执行目录
@@ -434,52 +744,61 @@ if($TRUE_FALSE -eq $False){     #目录不存在，先创建目录
 
 
 $expand_zip_home=Join-Path $zip_download_dir "zip_home";
-$expand_mingit_zip_home=Join-Path $expand_zip_home "minGit";
-if(Test-Path $expand_mingit_zip_home){
-    #若git目录已存在，则不下载
-    Write-Debug "Git目录已存在，不需要重复下载"
-}else{
-    Write-Debug "先下载git,jdk受项目影响需要下不同版本，后续再开启下载..."
 
-    $start_time=Get-Date
-    Write-Debug "开始下载mingit,开始时间: $start_time"
-    Download $min_git_win_url $min_git_save_path
 
-    if($?){
-        Write-Output "输出:  下载minGit成功，准备解压Mingit压缩包..."
-        $finish_time=Get-Date
-        Write-Debug "结束下载mingit,结束时间: $finish_time"
+
+if($isGitInstalled -eq $False){
+    
+    Write-Debug "系统内没有安装git，开始在上下文中安装window mingit"
+
+    $expand_mingit_zip_home=Join-Path $expand_zip_home "minGit";
+    if(Test-Path $expand_mingit_zip_home){
+        #若git目录已存在，则不下载
+        Write-Debug "Git目录已存在，不需要重复下载"
     }else{
-        Write-Error "下载minGit失败，脚本退出"
-        return;
+        Write-Debug "先下载git,jdk受项目影响需要下不同版本，后续再开启下载..."
+
+        $start_time=Get-Date
+        Write-Debug "开始下载mingit,开始时间: $start_time"
+        Download $min_git_win_url $min_git_save_path
+
+        if($?){
+            Write-Output "输出:  下载minGit成功，准备解压Mingit压缩包..."
+            $finish_time=Get-Date
+            Write-Debug "结束下载mingit,结束时间: $finish_time"
+        }else{
+            Write-Error "下载minGit失败，脚本退出"
+            return;
+        }
+
+
+        #开始解压mingit
+        Expand-Archive -Path $min_git_save_path -DestinationPath $expand_mingit_zip_home -Force
+        if($?){
+            Write-Output "输出:  解压minGit压缩包成功，准备配置git环境变量..."
+        }else{
+            Write-Error "解压minGit压缩包失败，脚本退出"
+            return;
+        }
+
+        Write-Debug "git解压完毕，开始配置环境变量..."
     }
 
+    #配置git的环境变量
+    $PATH_GIT_EXECUTABLE = [io.path]::combine($expand_mingit_zip_home ,"cmd"); # git executable
 
-    #开始解压mingit
-    Expand-Archive -Path $min_git_save_path -DestinationPath $expand_mingit_zip_home -Force
-    if($?){
-        Write-Output "输出:  解压minGit压缩包成功，准备配置git环境变量..."
-    }else{
-        Write-Error "解压minGit压缩包失败，脚本退出"
-        return;
+    #将git和android sdk的可执行路径 增加到path环境变量
+    if($Env:PATH.contains($PATH_GIT_EXECUTABLE)){
+        echo "your env path contains git executable, remove first, then add git executable to env_path at beginning"
+        $Env:PATH = $Env:PATH.Replace($PATH_GIT_EXECUTABLE+";", '');
     }
 
-    Write-Debug "git解压完毕，开始配置环境变量..."
+    $Env:PATH=$PATH_GIT_EXECUTABLE +";" +  $Env:PATH
+    
 }
 
-#配置git的环境变量
-$PATH_GIT_EXECUTABLE = [io.path]::combine($expand_mingit_zip_home ,"cmd"); # git executable
 
-#将git和android sdk的可执行路径 增加到path环境变量
-if($Env:Path.contains($PATH_GIT_EXECUTABLE)){
-    Write-Output "your env path contains git executable, remove first, then add git executable to env_path at beginning"
-    $Env:Path = $Env:Path.Replace($PATH_GIT_EXECUTABLE+";", '');
-}
-
-$Env:Path=$PATH_GIT_EXECUTABLE +";" +  $Env:Path
-
-
-Write-Debug "当前环境变量path是: $Env:Path"
+Write-Debug "当前上下文的环境变量path是: $Env:PATH"
 
 #列出git仓库的所有分支，交互式窗口提示用户选择一个分支进行打包
 #https://stackoverflow.com/questions/54372601/running-git-clone-from-powershell-giving-errors-even-when-it-seems-to-work
@@ -487,11 +806,11 @@ Write-Debug "当前环境变量path是: $Env:Path"
 $env:GIT_REDIRECT_STDERR = '2>&1'   #解决git执行成功，但是控制台报错的问题
 
 #列出git repository的全部远端分支
-Set-Location $PATH_GIT_EXECUTABLE
+# cd $PATH_GIT_EXECUTABLE
 $project_android_git_withuserinfo = $uri_project_git.Scheme + "://" + $user_info_str + "@" +  $uri_project_git.Host + ":" +   $uri_project_git.Port + $uri_project_git.PathAndQuery + $uri_project_git.Fragment;
 Write-Output "输出:  带用户信息的git仓库地址为: $project_android_git_withuserinfo" 
 $ls_remote_git_return = (git ls-remote -h $project_android_git_withuserinfo);
-$remote_branch_array =  ($ls_remote_git_return )  2>&1 | ForEach-Object ToString
+$remote_branch_array =  ($ls_remote_git_return )  2>&1 | % ToString
 Write-Debug "测试,git ls-remote命令返回: $remote_branch_array"
 $remote_branch_names = @()   #远端分支名，有前缀"refs/heads/"
 foreach ($line in $remote_branch_array){
@@ -507,7 +826,7 @@ if($remote_branch_names  -ccontains ($remote_branch_prefix + $project_android_gi
     Write-Output "输出:  精确匹配到你输入的分支: $project_android_git_branch，准备克隆分支"
     $selected_branch_name = $project_android_git_branch;
 }else{
-    $selected_branch = showSelectDialog -dialogTitle:"选择分支" -dialogText:"请选择一个远程分支进行下载" -items:$remote_branch_names
+    $selected_branch = showSelectDialogOrCmd "选择分支" "请选择一个远程分支进行下载" $remote_branch_names
     if([String]::IsNullOrEmpty($selected_branch)){
         Write-Error "您没有选择任何分支，脚本退出"
         return    
@@ -553,7 +872,7 @@ if($TRUE_FALSE_PROJECT_BUILD_FILE -eq $False){
 
 #
 #获取所有工程子目录的文件名
-$sub_folders_names = (Get-ChildItem -Directory -Path $android_project_dir)  2>&1 | ForEach-Object ToString
+$sub_folders_names = (Get-ChildItem -Directory -Path $android_project_dir)  2>&1 | % ToString
 
 $wait_install_components = @()
 $wait_install_components += "platform-tools";
@@ -574,10 +893,10 @@ foreach ($sub_folder_name in $sub_folders_names){
     #获取子模块下所有build.gradle中的buildToolsVersion和compileSdkVersion版本号
     #1、获取compile sdk version
     $complileSdkVersionEntry = 'compileSdkVersion\s*\d+';  #匹配如: compileSdkVersion 29
-    $module_compilesdk_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $complileSdkVersionEntry -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }
+    $module_compilesdk_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $complileSdkVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
     if([String]::IsNullOrEmpty($module_compilesdk_version_line)){        
-        Write-Error "没有获取到模块: $sub_folder_name 的 compile sdk version，脚本退出"
-        return; 
+        Write-Error "没有获取到模块: $sub_folder_name 的 compile sdk version，忽略..."
+        continue; 
     }else{ 
         $complileSdkVersion_split= -split $module_compilesdk_version_line
         $complileSdkVersion = $complileSdkVersion_split[1]
@@ -589,7 +908,7 @@ foreach ($sub_folder_name in $sub_folders_names){
 
     #2、获取buildtools version
     $buildToolsVersionEntry = "buildToolsVersion\s*""\d+.\d+.\d+""";   #匹配如: buildToolsVersion 29.0.2
-    $module_buildtools_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $buildToolsVersionEntry -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }
+    $module_buildtools_version_line =  Select-String -path $sub_module_buildfile_path -Pattern  $buildToolsVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
     if([String]::IsNullOrEmpty($module_buildtools_version_line)){        
         Write-Debug "没有获取到模块: $sub_folder_name 的buildToolsVersion，不需要下载build tools"
     }else{
@@ -604,47 +923,83 @@ foreach ($sub_folder_name in $sub_folders_names){
 
 $wait_install_components +="--licenses";
 
-#获取项目根目录build.gradle文件内容，判断是要下载jdk8还是11
+#获取项目根目录build.gradle文件内容，根据AGP的版本，判断是要下载jdk8还是11(AGP 版本 >=7.0)
 Write-Debug "工程根目录下build.gradle路径是：$project_build_file "
-$AGPToolsVersionEntry = 'com.android.tools.build:gradle:\s*\d+.\d+.\d+'; #匹配如:  com.android.tools.build:gradle:3.2.0
-$AGPToolsVersionLine = Select-String -path $project_build_file  -Pattern $AGPToolsVersionEntry -AllMatches | ForEach-Object { $_.Matches } | ForEach-Object { $_.Value }
 
-if([String]::IsNullOrEmpty($AGPToolsVersionLine)){
-    Write-Error "在项目根目录下的build.gradle文件中，没有找到AGPToolsVersion行，无法进行编译打包，脚本退出"
-    return;
+$pattern_version_code = "([1-9][0-9]{1,}|[789])(\.\d+)*(\.\+|\.\d+)"    #匹配7.0或以上的AGP版本
+
+#匹配如: classpath 'com.android.tools.build:gradle:7.0.4' 或 classpath 'com.android.tools.build:gradle:7.0.+'
+$AGPToolsVersionEntry = "classpath\s*['`"]com.android.tools.build:gradle:$pattern_version_code['`"]"; 
+$AGPPToolsVersionLine = Select-String -path $project_build_file  -Pattern $AGPToolsVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
+if([String]::IsNullOrEmpty($AGPPToolsVersionLine)){
+    Write-Debug "no match line for: greater or equal AGP Tools version 7"   
 }else{
-    Write-Debug "搜索到的AGPTools 行内容是: $AGPToolsVersionLine"
+    Write-Debug "found match line for: greater or equal AGP Tools version 7"
 }
 
-$AGPVersion_startIndex = $AGPToolsVersionLine.LastIndexOf(":")+1;
-$AGP_VERSION = $AGPToolsVersionLine.Substring($AGPVersion_startIndex) -replace '\s+', ''
-# $AGP_VERSION='7.0.2'
+#匹配如: id 'com.android.application' version  "7.4.0" apply false 或 id 'com.android.application' version  "7.4.+" apply false
+$AGPApplicationVersionEntry = "id\s*['`"]com.android.application['`"]\s*version\s*['`"]$pattern_version_code['`"]"; 
+$AGPApplicationVersionLine = Select-String -path $project_build_file  -Pattern $AGPApplicationVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
+if([String]::IsNullOrEmpty($AGPApplicationVersionLine)){
+    Write-Debug "no match line for: greater or equal AGP application version 7"   
+}else{
+    Write-Debug "found match line for: greater or equal AGP application version 7"
+}
 
-Write-Output "输出:  工程根目录build.gradle文件中AGP版本:$AGP_VERSION"
 
-Write-Output "输出:  待安装的sdk组件是: $wait_install_components"
+#匹配如:  id 'com.android.library' version  "7.4.0" apply false 或 id 'com.android.library' version  "7.4.+" apply false
+$AGPLibraryVersionEntry = "id\s*['`"]com.android.library['`"]\s*version\s*['`"]$pattern_version_code['`"]"; 
+$AGPLibraryVersionLine = Select-String -path $project_build_file  -Pattern $AGPLibraryVersionEntry -AllMatches | % { $_.Matches } | % { $_.Value }
+if([String]::IsNullOrEmpty($AGPLibraryVersionLine)){
+    Write-Debug "no match line for: greater or equal AGP library version 7"
+}else{
+    Write-Debug "found match line for: greater or equal AGP library version 7"
+}
 
-$IntAGPVer = [int]$AGP_VERSION.replace(".","")
-Write-Debug "AGP版本整数为: $IntAGPVer"
 $is_jdk_11_need = $False
-if($IntAGPVer -gt 700){     #android 开发官网指引，AGP大于7.0时，需要jdk11兼容
+if($AGPPToolsVersionLine -or $AGPApplicationVersionLine  -or $AGPLibraryVersionLine){
     Write-Debug "AGP版本大于7.0.0,需要配合jdk 11,后续需要下载JDK11"
     $is_jdk_11_need = $True
 }else{
     Write-Debug "AGP版本小于7.0.0,配合jdk-8即可,后续需要下载JDK8"
     $is_jdk_11_need = $False
-}   
+}
 
 
 If($Is64BitOS -eq $true) { 
-    $JDK_8_HOME = Join-Path $expand_zip_home "zulu8.66.0.15-ca-jdk8.0.352-win_x64";   #jdk home 8
+    if($isWin){
+        $JDK_8_HOME = Join-Path $expand_zip_home "zulu8.66.0.15-ca-jdk8.0.352-win_x64";   #jdk home 8
+    }else{
+        if($IsLinux){
+            $JDK_8_HOME = Join-Path $expand_zip_home "zulu8.66.0.15-ca-jdk8.0.352-linux_x64";   #jdk home 8
+        }else{
+            $JDK_8_HOME = Join-Path $expand_zip_home "zulu8.66.0.15-ca-jdk8.0.352-macosx_x64";   #jdk home 8
+        }
+    }
 }else{
-    $JDK_8_HOME = Join-Path $expand_zip_home "zulu8.66.0.15-ca-jdk8.0.352-win_i686";   #jdk home 8
+    if($isWin){
+        $JDK_8_HOME = Join-Path $expand_zip_home "zulu8.66.0.15-ca-jdk8.0.352-win_i686";   #jdk home 8
+    }else{
+        $JDK_8_HOME = Join-Path $expand_zip_home "zulu8.66.0.15-ca-jdk8.0.352-linux_i686";   #jdk home 8
+    }
 }
 If($Is64BitOS -eq $true) { 
-    $JDK_11_HOME = Join-Path $expand_zip_home "zulu11.60.19-ca-jdk11.0.17-win_x64";   #jdk home 11
+    if($isWin){
+        $JDK_11_HOME = Join-Path $expand_zip_home "zulu11.60.19-ca-jdk11.0.17-win_x64";   #jdk home 11
+    }else{
+        if($IsLinux){
+            $JDK_11_HOME = Join-Path $expand_zip_home "zulu11.60.19-ca-jdk11.0.17-linux_x64";   #jdk home 11
+        }else{
+            $JDK_11_HOME = Join-Path $expand_zip_home "zulu11.60.19-ca-jdk11.0.17-macosx_x64";   #jdk home 11
+        }
+
+    }
 }else{
-    $JDK_11_HOME = Join-Path $expand_zip_home "zulu11.60.19-ca-jdk11.0.17-win_i686";   #jdk home 11
+    if($isWin){
+        $JDK_11_HOME = Join-Path $expand_zip_home "zulu11.60.19-ca-jdk11.0.17-win_i686";   #jdk home 11
+    }else{
+         $JDK_11_HOME = Join-Path $expand_zip_home "zulu11.60.19-ca-jdk11.0.17-linux_i686";   #jdk home 11
+    }
 }
 
 if($is_jdk_11_need){
@@ -693,15 +1048,15 @@ if(Test-Path $JDK_HOME){
 
 $Env:JAVA_HOME=$JDK_HOME
 $JAVA_HOME_BIN_PATH=Join-Path $JDK_HOME "bin"
-if($Env:Path.contains($JAVA_HOME_BIN_PATH)){
-    Write-Output "your env path contains java home bin, remove first ,then add java home bin to env_path at beginning"
-    $Env:Path = $Env:Path.Replace($JAVA_HOME_BIN_PATH+";",'')
+if($Env:PATH.contains($JAVA_HOME_BIN_PATH)){
+    echo "your env path contains java home bin, remove first ,then add java home bin to env_path at beginning"
+    $Env:PATH = $Env:PATH.Replace($JAVA_HOME_BIN_PATH+";",'')
 }
 
-$Env:Path= $JAVA_HOME_BIN_PATH + ";" +  $Env:Path
+$Env:PATH= $JAVA_HOME_BIN_PATH + ";" +  $Env:PATH
 
 
-Write-Debug "配置Java环境变量后，当前Path环境变量: $Env:Path ,当前JAVA_HOME环境变量: $Env:JAVA_HOME"
+Write-Debug "配置Java环境变量后，当前Path环境变量: $Env:PATH ,当前JAVA_HOME环境变量: $Env:JAVA_HOME"
 
 $expand_android_sdk_zip_home=Join-Path $expand_zip_home "AndroidSdk";
 if(Test-Path $expand_android_sdk_zip_home){
@@ -730,20 +1085,24 @@ if(Test-Path $expand_android_sdk_zip_home){
 }
 
 $ANDROID_SDK_EXECUTABLE = [io.path]::combine($expand_android_sdk_zip_home, "cmdline-tools", "bin"); # android sdk executable path
-if($Env:Path.contains($ANDROID_SDK_EXECUTABLE)){
+if($Env:PATH.contains($ANDROID_SDK_EXECUTABLE)){
     Write-Debug "Android SDK可执行文件已配置到PATH环境变量，首先删除，然后将它添加到起始位置"
-    $Env:Path = $Env:Path.Replace($ANDROID_SDK_EXECUTABLE+";", '')
+    $Env:PATH = $Env:PATH.Replace($ANDROID_SDK_EXECUTABLE+";", '')
 }
-$Env:Path=$ANDROID_SDK_EXECUTABLE + ";" +  $Env:Path
+$Env:PATH=$ANDROID_SDK_EXECUTABLE + ";" +  $Env:PATH
 
-Write-Debug "配置Android SDK环境变量后，当前Path环境变量:$Env:Path"
+Write-Debug "配置Android SDK环境变量后，当前Path环境变量:$Env:PATH"
 
 Write-Output "输出:  Android SDK环境变量配置成功，准备通过命令行安装Android SDK组件..."
 
-Set-Location $ANDROID_SDK_EXECUTABLE
+cd $ANDROID_SDK_EXECUTABLE
 foreach ($component in $wait_install_components){
     Write-Debug "正在安装Android SDK组件: $component"
-    Write-Output y | sdkmanager.bat --no_https --sdk_root=$expand_android_sdk_zip_home $component
+    if($isWin -eq $True){
+        Write-Output y | sdkmanager.bat --no_https --sdk_root=$expand_android_sdk_zip_home $component
+    }else{
+        Write-Output y | ./sdkmanager --no_https --sdk_root=$expand_android_sdk_zip_home $component
+    }
 
     if($?){
         Write-Debug "安装Android SDK组件: $component 成功"
@@ -763,33 +1122,44 @@ if($?){
 #2\创建local.properties文件，文件中指定sdk路径
 #3\执行gradlew assembleRelease或bundleRelease任务，前面已指定临时变量java_home
 
-Set-Location $android_project_dir
+cd $android_project_dir
 $write_local_properties_content = "sdk.dir=$expand_android_sdk_zip_home" -replace "\\", "\\"    #如果是windows, 则必须将反斜杠\替换成\\
 Set-Content -Path .\local.properties -Value $write_local_properties_content    #将sdk路径写进local.properties，格式  sdk.dir=c:\\dirname1\\dirname2
 
 $package_start_time = Get-Date
 foreach ($pkg_type in $selected_package_types){
-    if($pkg_type -eq "aab"){
-        Write-Debug "正在打包aab..."
-        .\gradlew.bat bundleRelease
-    }elseif($pkg_type -eq "apk"){
-        Write-Debug "正在打包apk..."
-        .\gradlew.bat assembleRelease
+    if($isWin -eq $True){
+        if($pkg_type -eq "aab"){
+            Write-Debug "正在打包aab..."
+            .\gradlew.bat --no-daemon bundleRelease
+        }elseif($pkg_type -eq "apk"){
+            Write-Debug "正在打包apk..."
+            .\gradlew.bat --no-daemon assembleRelease
+        }
+    }else{
+        chmod +x gradlew    #必须授权可执行权限 在ubuntu或mac上
+        if($pkg_type -eq "aab"){
+            Write-Debug "正在打包aab..."
+            ./gradlew --no-daemon bundleRelease
+        }elseif($pkg_type -eq "apk"){
+            Write-Debug "正在打包apk..."
+            ./gradlew --no-daemon assembleRelease
+        }
     }
 
-    Get-Process -Name 'java' | Stop-Process -Force
-    if($?){
-        Write-Debug "Zulu进程成功被结束"   
-    }else{
-        Write-Debug "Zulu进程不能被结束，错误码:$lastexitcode"
+    if($isWin){
+        Get-Process -Name 'java' | Stop-Process -Force
+
+        if($?){
+            Write-Debug "Zulu进程成功被结束"   
+        }else{
+            Write-Debug "Zulu进程不能被结束，错误码:$lastexitcode"
+        }
     }
 }
 
-
-
-
 #过滤项目目录下，最后写入时间在打包开始后，且文件大小大于1mb字节的apk或aab文件
-$filter_android_pkg_files = (Get-ChildItem -Path $android_project_dir  -Recurse -Include *.apk ,*.aab | Where-Object -FilterScript {($_.LastWriteTime -gt $package_start_time) -and ($_.Length -ge 1mb)}) 2>&1 | ForEach-Object ToString
+$filter_android_pkg_files = (Get-ChildItem -Path $android_project_dir  -Recurse -Include *.apk ,*.aab | Where-Object -FilterScript {($_.LastWriteTime -gt $package_start_time) -and ($_.Length -ge 1mb)}) 2>&1 | % ToString
 if($filter_android_pkg_files){
     Write-Output "项目: $android_project_dir 生成apk或aab成功，准备拷贝到目标目录..."
 }else{
@@ -817,25 +1187,22 @@ foreach ($str_file_path in $filter_android_pkg_files){
 
 if($?){
     Write-Debug "打包apk已拷贝至路径: $copy_dest_dir"
-    $ws = New-Object -ComObject WScript.Shell  
-    $wsr = $ws.popup("打包完毕，请到路径下:$copy_dest_dir下查看，点击确定复制路径",0,"提示",0)
+    showPopAlertDialogOrCmd("提示", "打包完毕，请到路径下:$copy_dest_dir下查看，点击确定复制路径")
+    
 
     if($wsr -eq 1){   #点击了确定
         Set-Clipboard -Value $copy_dest_dir
-    
-        $ws = New-Object -ComObject WScript.Shell  
-        $ws.popup("打包路径已复制",0,"提示",0)  
+        showPopAlertDialogOrCmd("提示", "打包路径已复制")
     }
 }else{
     Write-Error "拷贝打包文件到目录: $copy_dest_dir 失败, 请手动拷贝到其他目录"
 }
 
 #打扫战场，清除环境变量
-$Env:Path = $Env:Path.Replace($ANDROID_SDK_EXECUTABLE+";", '')
-$Env:Path = $Env:Path.Replace($PATH_GIT_EXECUTABLE+";", '');
+$Env:PATH = $Env:PATH.Replace($ANDROID_SDK_EXECUTABLE+";", '')
+$Env:PATH = $Env:PATH.Replace($PATH_GIT_EXECUTABLE+";", '');
 
 exit
-
 
 
 
