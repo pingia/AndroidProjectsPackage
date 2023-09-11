@@ -1,0 +1,25 @@
+windows:
+step1. download the bat file from github raw url :  https://raw.githubusercontent.com/pingia/AndroidProjectsPackage/main/packageSimple.bat, and save the bat file to local disk dir, such as C:\Users\pingia\desktop
+      you can download it through browser or download it through powershell or cmd. if you choose download it through powershell,then you should do like below:
+      1.Enter the cmd command line, enter powershell, and start powershell
+      2.enter code snippet like this:
+         $client = new-object System.Net.WebClient
+         $client.DownloadFile('https://raw.githubusercontent.com/pingia/AndroidProjectsPackage/main/packageSimple.bat','C:\Users\pingia\desktop\packageSimple.bat')
+step2. find the bat file downloaded, right click the bat file, select "open" to execute it.
+
+
+
+ubuntu:
+download the linux bash file from github raw url : https://raw.githubusercontent.com/pingia/AndroidProjectsPackage/main/AndroidPkg.sh, and save the bash file to local disk dir,such as /home/pingia/desktop.
+you can download it through browser or download it through terminal. if you choose download it through terminal, then you should do like below:
+      open your terminal,  enter code snippet like this:
+
+      cd /home/pingia/desktop
+      wget -N  https://raw.githubusercontent.com/pingia/AndroidProjectsPackage/main/AndroidPkg.sh
+      chmod + x AndroidPkg.sh
+      ./AndroidPkg.sh
+
+
+That's all ,hope you will enjoy it.
+
+
